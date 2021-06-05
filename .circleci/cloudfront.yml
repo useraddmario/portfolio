@@ -52,39 +52,44 @@ Resources:
         RedirectAllRequestsTo:
           HostName: !Ref DomainName
 
-  CloudFrontOriginAccessIdentity:
-    Type: AWS::CloudFront::CloudFrontOriginAccessIdentity
-    Properties:
-      CloudFrontOriginAccessIdentityConfig:
-        Comment: !Sub 'CloudFront OAI for ${SubDomain}'
-        
   PortfolioDist:
     Type: AWS::CloudFront::Distribution
     Properties:
       DistributionConfig:
+        DefaultCacheBehavior:
+          AllowedMethods:
+            - GET
+            - HEAD
+          ViewerProtocolPolicy: redirect-to-https
+          DefaultTTL: 3600
+          ForwardedValues:
+            Cookies:
+              Forward: none
+            QueryString: true
+          TargetOriginId: !Sub 'S3-${DomainName}'
+        Enabled: 'true'
         Aliases:
         - !Ref SubDomain
         Origins:
-        - DomainName: Sub! '${DomainName}.s3-website-us-west-2.amazonaws.com'
+        - DomainName: Sub! '${DomainName}.s3.amazonaws.com'
           Id: Sub! 'S3-${DomainName}'
           OriginPath: !Sub "/portfolio-${PipelineID}"
           S3OriginConfig:
             OriginAccessIdentity:
               !Join ['', ['origin-access-identity/cloudfront/', !Ref CloudFrontOriginAccessIdentity]]
-        Enabled: 'true'
         DefaultRootObject: index.html
-        DefaultCacheBehavior:
-          AllowedMethods:
-            - GET
-            - HEAD
-          TargetOriginId: !Sub 'S3-${DomainName}'
-          ViewerProtocolPolicy: redirect-to-https
         PriceClass: PriceClass_200
         ViewerCertificate:
           AcmCertificateArn: !Ref 'CertificateArn'
           MinimumProtocolVersion: TLSv1.2_2019
           SslSupportMethod: 'sni-only'
 
+  CloudFrontOriginAccessIdentity:
+    Type: AWS::CloudFront::CloudFrontOriginAccessIdentity
+    Properties:
+      CloudFrontOriginAccessIdentityConfig:
+        Comment: !Sub 'CloudFront OAI for ${SubDomain}'
+        
   Route53RecordSetGroup:
     Type: AWS::Route53::RecordSetGroup
     Properties:
