@@ -67,6 +67,7 @@ Resources:
               Forward: none
             QueryString: true
           TargetOriginId: !Join
+            - ''
             - Sub! '${DomainName}.s3-website.'
             - !Ref "AWS::Region"
             - '.amazonaws.com'
@@ -75,6 +76,7 @@ Resources:
         - !Ref SubDomain
         Origins:
         - DomainName: !Join
+            - ''
             - Sub! '${DomainName}.s3-website.'
             - !Ref "AWS::Region"
             - '.amazonaws.com'
