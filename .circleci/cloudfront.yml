@@ -10,10 +10,6 @@ Parameters:
     Description: Subdomain
     Type: String
     Default: www.useraddmario.com
-  S3LogsBucket:
-    Description: Bucket for logs
-    Type: String
-    Default: aws-cloudtrail-logs-089634162715-b8e00a06
 
 Resources:
   RootBucket:
@@ -68,10 +64,6 @@ Resources:
               !Join ['', ['origin-access-identity/cloudfront/', !Ref CloudFrontOriginAccessIdentity]]
         Enabled: 'true'
         DefaultRootObject: index.html
-        Logging:
-          Bucket: !Ref S3LogsBucket
-          IncludeCookies: false
-          Prefix: 'cdn/'
         DefaultCacheBehavior:
           AllowedMethods:
             - GET
