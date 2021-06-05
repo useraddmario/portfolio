@@ -102,8 +102,7 @@ Resources:
           Id: !Ref DomainName
           OriginPath: !Sub "/portfolio-${PipelineID}"
           S3OriginConfig:
-            OriginAccessIdentity:
-              !Join ['', ['origin-access-identity/cloudfront/', !Ref CloudFrontOriginAccessIdentity]]
+            OriginAccessIdentity: !Join ['', ['origin-access-identity/cloudfront/', !Ref CloudFrontOriginAccessIdentity]]
         DefaultRootObject: index.html
         PriceClass: PriceClass_200
         ViewerCertificate:
