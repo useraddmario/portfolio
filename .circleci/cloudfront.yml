@@ -41,7 +41,6 @@ Mappings:
     sa-east-1:
       S3hostedzoneID: Z31GFT0UA1I2HV
       websiteendpoint: s3-website-sa-east-1.amazonaws.com
-.s3-website-us-west-2.amazonaws.com
 Resources:
   RootBucket:
     Type: AWS::S3::Bucket
