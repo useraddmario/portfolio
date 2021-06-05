@@ -53,8 +53,7 @@ Resources:
     Properties:
       DistributionConfig:
         Aliases:
-        - !Sub '${SubDomain.${DomainName}'
-        - !Ref DomainName
+        - !Ref SubDomain
         Origins:
         - DomainName: Sub! '${DomainName}.s3-website-us-west-2.amazonaws.com'
           Id: Sub! 'S3-${DomainName}'
@@ -80,14 +79,14 @@ Resources:
     Type: AWS::CloudFront::CloudFrontOriginAccessIdentity
     Properties:
       CloudFrontOriginAccessIdentityConfig:
-        Comment: !Sub 'CloudFront OAI for ${SubDomain}.${DomainName}'
+        Comment: !Sub 'CloudFront OAI for ${SubDomain}'
         
   Route53RecordSetGroup:
     Type: AWS::Route53::RecordSetGroup
     Properties:
       HostedZoneName: !Sub '${DomainName}.'
       RecordSets:
-      - Name: !Sub '${SubDomain}.${DomainName}'
+      - Name: !Sub '${SubDomain}'
         Type: 'A'
         AliasTarget:
           DNSName: !GetAtt 'PortfolioDist.DomainName'
