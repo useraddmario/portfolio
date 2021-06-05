@@ -68,18 +68,18 @@ Resources:
             QueryString: true
           TargetOriginId: !Join
             - ''
-            - Sub! '${DomainName}.s3-website.'
-            - !Ref "AWS::Region"
-            - '.amazonaws.com'
+            - - Sub! '${DomainName}.s3-website.'
+              - !Ref "AWS::Region"
+              - '.amazonaws.com'
         Enabled: 'true'
         Aliases:
         - !Ref SubDomain
         Origins:
         - DomainName: !Join
             - ''
-            - Sub! '${DomainName}.s3-website.'
-            - !Ref "AWS::Region"
-            - '.amazonaws.com'
+            - - Sub! '${DomainName}.s3-website.'
+              - !Ref "AWS::Region"
+              - '.amazonaws.com'
           Id: !Ref DomainName
           OriginPath: !Sub "/portfolio-${PipelineID}"
           S3OriginConfig:
