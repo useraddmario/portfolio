@@ -116,8 +116,8 @@ Outputs:
     Value: !Sub ${PipelineID}
     Export:
       Name: PipelineID
-  PortfolioDist:
+  PortfolioDistribution:
     Description: CloudFront Distribution ID
     Value: !Ref PortfolioDist
     Export:
-      Name: PortfolioDistID
+      Name: PortfolioDistributionID
