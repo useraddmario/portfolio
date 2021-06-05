@@ -52,6 +52,12 @@ Resources:
         RedirectAllRequestsTo:
           HostName: !Ref DomainName
 
+  CloudFrontOriginAccessIdentity:
+    Type: AWS::CloudFront::CloudFrontOriginAccessIdentity
+    Properties:
+      CloudFrontOriginAccessIdentityConfig:
+        Comment: !Sub 'CloudFront OAI for ${SubDomain}'
+        
   PortfolioDist:
     Type: AWS::CloudFront::Distribution
     Properties:
@@ -79,12 +85,6 @@ Resources:
           MinimumProtocolVersion: TLSv1.2_2019
           SslSupportMethod: 'sni-only'
 
-  CloudFrontOriginAccessIdentity:
-    Type: AWS::CloudFront::CloudFrontOriginAccessIdentity
-    Properties:
-      CloudFrontOriginAccessIdentityConfig:
-        Comment: !Sub 'CloudFront OAI for ${SubDomain}'
-        
   Route53RecordSetGroup:
     Type: AWS::Route53::RecordSetGroup
     Properties:
