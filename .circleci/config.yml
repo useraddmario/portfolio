@@ -30,6 +30,9 @@ jobs:
              --query 'StackSummaries[?StackName==`maindomain`].StackName[]' \
              --output text)
 
+           $PipelineID=${CIRCLE_WORKFLOW_ID:0:7}
+           echo $PipelineID
+
            if [ "$present" == "maindomain" ]
            then
              aws cloudformation update-stack \
@@ -40,7 +43,7 @@ jobs:
              aws cloudformation deploy \
                --stack-name maindomain \
                --template-file ./cloudfront.yml
-               --parameter-overrides PipelineID=${CIRCLE_WORKFLOW_ID:0:7}
+               --parameter-overrides PipelineID=$PipelineID
            fi
            
            aws s3 cp index.html s3://useraddmario.com/
