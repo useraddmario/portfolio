@@ -66,13 +66,13 @@ Resources:
             Cookies:
               Forward: none
             QueryString: true
-          TargetOriginId: s3-domainname
+          TargetOriginId: !Ref DomainName
         Enabled: 'true'
         Aliases:
         - !Ref SubDomain
         Origins:
         - DomainName: Sub! '${DomainName}.s3.amazonaws.com'
-          Id: s3-domainname
+          Id: !Ref DomainName
           OriginPath: !Sub "/portfolio-${PipelineID}"
           S3OriginConfig:
             OriginAccessIdentity:
