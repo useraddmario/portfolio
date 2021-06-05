@@ -1,0 +1,54 @@
+version: 2.1
+
+parameters:
+  domain:
+    type: string
+    default: "useraddmario.org"
+  stack-name:
+    type: string
+    default: "maindomain"
+
+commands:
+  dependencies:
+    steps:
+      - run: yum -y install tar less gzip # needed to attach_workspace
+
+jobs:
+  update_cloudfront_dist:
+    docker:
+      - image: amazon/aws-cli
+    steps:
+      - checkout
+      - run:
+         name: update cloudFront distribution
+         command: |
+           # pwd in /root/project by default
+           cd .circleci
+           # check if stack exists, if so update else deploy
+           present=$(aws cloudformation list-stacks \
+             --stack-status-filter "CREATE_COMPLETE" "UPDATE_COMPLETE" \
+             --query 'StackSummaries[?StackName==`maindomain`].StackName[]' \
+             --output text)
+
+           if [ "$present" == "maindomain" ]
+           then
+             aws cloudformation update-stack \
+               --stack-name maindomain \
+               --template-body file://cloudfront.yml
+           else
+             aws cloudformation deploy \
+               --stack-name maindomain \
+               --template-file ./cloudfront.yml
+           fi
+           
+           cat <<'END_HTML' >index.html
+           <!DOCTYPE html>\n<html>\n\t<body>\n\t\t<h1>Hello World!</h1>\n\t</body>\n</html>
+           END_HTML
+
+           aws s3 cp index.html s3://<< pipeline.parameters.domain >>
+
+workflows:
+  deploy_workflow:
+    jobs:
+      - update_cloudfront_dist:
+          context: aws

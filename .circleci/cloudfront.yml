@@ -1,0 +1,129 @@
+Parameters:
+  PipelineID:
+    Description: Unique identifier.
+    Type: String
+  DomainName:
+    Description: Domain/S3 bucket name
+    Type: String
+    Default: useraddmario.com
+  SubDomain:
+    Description: Subdomain
+    Type: String
+    Default: www.useraddmario.com
+  S3LogsBucket:
+    Description: Bucket for logs
+    Type: String
+    Default: aws-cloudtrail-logs-089634162715-b8e00a06
+
+Resources:
+  RootBucket:
+    Type: AWS::S3::Bucket
+    DeletionPolicy: Delete
+    Properties:
+      BucketName: !Ref DomainName
+      AccessControl: PublicRead
+      WebsiteConfiguration:
+        IndexDocument: index.html
+        ErrorDocument: 404.html
+  BucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      PolicyDocument:
+        Id: PortfolioRootS3Policy
+        Version: 2012-10-17
+        Statement:
+          - Sid: PublicReadForGetBucketObjects
+            Effect: Allow
+            Principal: '*'
+            Action: 's3:GetObject'
+            Resource: !Join
+              - ''
+              - - 'arn:aws:s3:::'
+                - !Ref RootBucket
+                - /*
+      Bucket: !Ref RootBucket
+  WWWBucket:
+    Type: AWS::S3::Bucket
+    DeletionPolicy: Delete
+    Properties:
+      BucketName: !Ref SubDomain
+      AccessControl: BucketOwnerFullControl
+      WebsiteConfiguration:
+        RedirectAllRequestsTo:
+          HostName: !Ref Domain
+
+  PortfolioDist:
+    Type: AWS::CloudFront::Distribution
+    Properties:
+      DistributionConfig:
+        Aliases:
+        - !Sub '${SubDomain.${DomainName}'
+        - !Ref DomainName
+        Origins:
+        - DomainName: Sub! '${DomainName}.s3-website-us-west-2.amazonaws.com'
+          Id: Sub! 'S3-${DomainName}'
+          OriginPath: !Sub "/portfolio-${PipelineID}"
+          S3OriginConfig:
+            OriginAccessIdentity:
+              !Join ['', ['origin-access-identity/cloudfront/', !Ref CloudFrontOriginAccessIdentity]]
+        Enabled: 'true'
+        DefaultRootObject: index.html
+        Logging:
+          Bucket: !Ref S3LogsBucket
+          IncludeCookies: false
+          Prefix: 'cdn/'
+        DefaultCacheBehavior:
+          AllowedMethods:
+            - GET
+            - HEAD
+          TargetOriginId: !Sub 'S3-${DomainName}'
+          ViewerProtocolPolicy: redirect-to-https
+        PriceClass: PriceClass_200
+        ViewerCertificate:
+          AcmCertificateArn: !Ref 'CertificateArn'
+          MinimumProtocolVersion: TLSv1.2_2019
+          SslSupportMethod: 'sni-only'
+
+  CloudFrontOriginAccessIdentity:
+    Type: AWS::CloudFront::CloudFrontOriginAccessIdentity
+    Properties:
+      CloudFrontOriginAccessIdentityConfig:
+        Comment: !Sub 'CloudFront OAI for ${SubDomain}.${DomainName}'
+        
+  Route53RecordSetGroup:
+    Type: AWS::Route53::RecordSetGroup
+    Properties:
+      HostedZoneName: !Sub '${DomainName}.'
+      RecordSets:
+      - Name: !Sub '${SubDomain}.${DomainName}'
+        Type: 'A'
+        AliasTarget:
+          DNSName: !GetAtt 'PortfolioDist.DomainName'
+          EvaluateTargetHealth: false
+          # Always this HostedZoneId for CF
+          HostedZoneId: 'Z2FDTNDATAQYW2'
+
+  ApexRoute53RecordSetGroup:
+    Condition: CreateApexConfig
+    Type: AWS::Route53::RecordSetGroup
+    Properties:
+      HostedZoneName: !Sub '${DomainName}.'
+      RecordSets:
+      - Name: !Ref 'DomainName'
+        Type: 'A'
+        AliasTarget:
+          DNSName: !GetAtt 'PortfolioDist.DomainName'
+          EvaluateTargetHealth: false
+          # Always this HostedZoneId for CF
+          HostedZoneId: 'Z2FDTNDATAQYW2'
+Outputs:
+  PipelineID:
+    Description: Pipeline ID for current deployment
+    Value: !Sub ${PipelineID}
+    Export:
+      Name: PipelineID
+  PortfolioDist:
+    Description: CloudFront Distribution ID
+    Value: !Ref PortfolioDist
+    Export:
+      Name: PortfolioDistID
