@@ -1,7 +1,6 @@
-# hugo_portfolio
+# portfolio
 Simple automated Hugo portfolio site
 
 Personal portfolio site
 
-Built on Hugo, a .markdown to .html static site generator
-# portfolio
+Built on Hugo, a .md to .html static site generator website
