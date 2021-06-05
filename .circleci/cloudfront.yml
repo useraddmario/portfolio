@@ -25,6 +25,7 @@ Resources:
       WebsiteConfiguration:
         IndexDocument: index.html
         ErrorDocument: 404.html
+
   BucketPolicy:
     Type: AWS::S3::BucketPolicy
     Properties:
@@ -42,6 +43,7 @@ Resources:
                 - !Ref RootBucket
                 - /*
       Bucket: !Ref RootBucket
+
   WWWBucket:
     Type: AWS::S3::Bucket
     DeletionPolicy: Delete
@@ -82,8 +84,13 @@ Resources:
               - '.amazonaws.com'
           Id: !Ref DomainName
           OriginPath: !Sub "/portfolio-${PipelineID}"
-          S3OriginConfig:
-            OriginAccessIdentity: !Join ['', ['origin-access-identity/cloudfront/', !Ref CloudFrontOriginAccessIdentity]]
+          #S3OriginConfig:
+          #  OriginAccessIdentity: !Join 
+          #    - ''
+          #    - - 'origin-access-identity/cloudfront/'
+          #      - !Ref CloudFrontOriginAccessIdentity
+          CustomOriginConfig:
+            OriginProtocolPolicy: match-viewer
         DefaultRootObject: index.html
         PriceClass: PriceClass_200
         ViewerCertificate:
