@@ -41,10 +41,6 @@ jobs:
                --template-file ./cloudfront.yml
            fi
            
-           cat <<'END_HTML' >index.html
-           <!DOCTYPE html>\n<html>\n\t<body>\n\t\t<h1>Hello World!</h1>\n\t</body>\n</html>
-           END_HTML
-
            aws s3 cp index.html s3://useraddmario.com/
 
 workflows:
