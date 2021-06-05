@@ -50,7 +50,7 @@ Resources:
       AccessControl: BucketOwnerFullControl
       WebsiteConfiguration:
         RedirectAllRequestsTo:
-          HostName: !Ref Domain
+          HostName: !Ref DomainName
 
   PortfolioDist:
     Type: AWS::CloudFront::Distribution
