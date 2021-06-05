@@ -29,22 +29,22 @@ jobs:
              --stack-status-filter "CREATE_COMPLETE" "UPDATE_COMPLETE" \
              --query 'StackSummaries[?StackName==`maindomain`].StackName[]' \
              --output text)
-
+           echo $present
            $PipelineID=${CIRCLE_WORKFLOW_ID:0:7}
            echo $PipelineID
 
-           if [ "$present" == "maindomain" ]
-           then
-             aws cloudformation update-stack \
-               --stack-name maindomain \
-               --template-body file://cloudfront.yml
-               --parameters ParameterKey=PipelineID,ParameterValue=${CIRCLE_WORKFLOW_ID:0:7}
-           else
+           #if [ "$present" == "maindomain" ]
+           #then
+           #  aws cloudformation update-stack \
+           #    --stack-name maindomain \
+           #    --template-body file://cloudfront.yml
+           #    --parameters ParameterKey=PipelineID,ParameterValue=${CIRCLE_WORKFLOW_ID:0:7}
+           #else
              aws cloudformation deploy \
                --stack-name maindomain \
                --template-file ./cloudfront.yml
                --parameter-overrides PipelineID=$PipelineID
-           fi
+           # fi
            
            aws s3 cp index.html s3://useraddmario.com/
 
