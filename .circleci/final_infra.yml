@@ -59,6 +59,27 @@ Resources:
         RedirectAllRequestsTo:
           HostName: !Ref DomainName
 
+  S3BucketOrgSub:
+    Type: AWS::S3::Bucket
+    DeletionPolicy: Delete
+    Properties:
+      BucketName: !Sub 'www.${DomainNameOrg}'
+      AccessControl: BucketOwnerFullControl
+      WebsiteConfiguration:
+        RedirectAllRequestsTo:
+          HostName: !Ref DomainName
+
+  S3BucketSubOrg:
+    Type: AWS::S3::Bucket
+    DeletionPolicy: Delete
+    Properties:
+      BucketName: !Ref DomainNameOrg
+      AccessControl: BucketOwnerFullControl
+      WebsiteConfiguration:
+        RedirectAllRequestsTo:
+          HostName: !Ref DomainName
+
+
 
   CloudFrontDistribution:
     Type: AWS::CloudFront::Distribution
