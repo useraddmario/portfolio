@@ -90,7 +90,7 @@ Outputs:
     Description: Pipeline ID for current deployment
     Value: !Sub ${PipelineID}
     Export:
-      Name: PipelineID
+      Name: PipelineID2
   PortfolioDistribution:
     Description: CloudFront Distribution ID
     Value: !Ref PortfolioDist
