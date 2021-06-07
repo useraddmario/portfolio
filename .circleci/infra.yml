@@ -1,8 +1,4 @@
-
 Parameters:
-  PipelineID:
-    Description: Unique identifier.
-    Type: String
   DomainName:
     Description: Domain/S3 bucket name
     Type: String
@@ -60,11 +56,3 @@ Resources:
     Properties:
       CloudFrontOriginAccessIdentityConfig:
         Comment: !Sub 'CloudFront OAI for ${SubDomain}'
-        
-Outputs:
-  PipelineID:
-    Description: Pipeline ID for current deployment
-    Value: !Sub ${PipelineID}
-    Export:
-      Name: PipelineID
-  

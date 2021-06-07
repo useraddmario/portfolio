@@ -37,7 +37,6 @@ jobs:
               aws cloudformation update-stack \
                 --stack-name maindomain \
                 --template-body file://infra.yml
-                --parameters ParameterKey=PipelineID,ParameterValue=${CIRCLE_WORKFLOW_ID:0:7}
                 #--template-body file://cloudfront.yml
                 echo "test1"
               aws cloudformation update-stack \
@@ -49,7 +48,6 @@ jobs:
               aws cloudformation deploy \
                 --stack-name maindomain \
                 --template-file ./infra.yml \
-                --parameter-overrides PipelineID=${CIRCLE_WORKFLOW_ID:0:7}
                 #--template-file ./cloudfront.yml \
                 echo "test2"
               aws cloudformation deploy \
