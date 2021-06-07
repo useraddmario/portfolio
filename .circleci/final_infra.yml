@@ -131,7 +131,7 @@ Resources:
           MinimumProtocolVersion: TLSv1.1_2016
           SslSupportMethod: 'sni-only'
 
-  Route53RecordSetGroup:
+  DomainRecordSetGroup:
     Type: AWS::Route53::RecordSetGroup
     Properties:
       HostedZoneName: !Sub '${DomainName}.'
@@ -148,7 +148,8 @@ Resources:
           DNSName: !GetAtt CloudFrontDistribution.DomainName
           EvaluateTargetHealth: false
           HostedZoneId: Z2FDTNDATAQYW2
-  Route53RecordSetGroup:
+
+  DomainOrgRecordSetGroup:
     Type: AWS::Route53::RecordSetGroup
     Properties:
       HostedZoneName: !Sub '${DomainNameOrg}.'
