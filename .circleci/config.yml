@@ -38,10 +38,10 @@ jobs:
                 --template-body file://cloudfront.yml
                 --parameters ParameterKey=PipelineID,ParameterValue=${CIRCLE_WORKFLOW_ID:0:7}
             else
-            aws cloudformation deploy \
-              --stack-name maindomain \
-              --template-file ./cloudfront.yml \
-              --parameter-overrides PipelineID=${CIRCLE_WORKFLOW_ID:0:7}
+              aws cloudformation deploy \
+                --stack-name maindomain \
+                --template-file ./cloudfront.yml \
+                --parameter-overrides PipelineID=${CIRCLE_WORKFLOW_ID:0:7}
             fi
            
             aws s3 cp index.html s3://useraddmario.com/
