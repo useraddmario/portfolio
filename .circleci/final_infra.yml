@@ -90,12 +90,6 @@ Resources:
           ViewerProtocolPolicy: 'redirect-to-https'
         DefaultRootObject: 'index.html'
         Enabled: true
-        HttpVersion: http2
-        IPV6Enabled: true
-        Logging:
-          Bucket: !Ref S3Logs
-          IncludeCookies: false
-          Prefix: 'cdn/'
         Origins:
           - CustomOriginConfig:
               HTTPPort: 80
