@@ -1,5 +1,5 @@
 Parameters:
-  PipelineID:
+  PipelineID2:
     Description: Unique identifier.
     Type: String
   DomainName:
@@ -45,7 +45,7 @@ Resources:
               - !Ref "AWS::Region"
               - '.amazonaws.com'
           Id: !Ref DomainName
-          OriginPath: !Sub "/portfolio-${PipelineID}"
+          OriginPath: !Sub "/portfolio-${PipelineID2}"
           #S3OriginConfig:
           #  OriginAccessIdentity: !Join 
           #    - ''
@@ -88,7 +88,7 @@ Resources:
 Outputs:
   PipelineID2:
     Description: Pipeline ID for current deployment
-    Value: !Sub ${PipelineID}
+    Value: !Sub ${PipelineID2}
     Export:
       Name: PipelineID2
   PortfolioDistribution:
