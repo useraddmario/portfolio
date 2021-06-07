@@ -35,12 +35,14 @@ jobs:
             then
               aws cloudformation update-stack \
                 --stack-name maindomain \
-                --template-body file://cloudfront.yml
+                #--template-body file://cloudfront.yml
+                --template-body file://infra1.yml
                 --parameters ParameterKey=PipelineID,ParameterValue=${CIRCLE_WORKFLOW_ID:0:7}
             else
               aws cloudformation deploy \
                 --stack-name maindomain \
-                --template-file ./cloudfront.yml \
+                #--template-file ./cloudfront.yml \
+                --template-file ./infra1.yml \
                 --parameter-overrides PipelineID=${CIRCLE_WORKFLOW_ID:0:7}
             fi
            
