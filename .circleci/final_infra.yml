@@ -93,7 +93,7 @@ Resources:
         HttpVersion: http2
         IPV6Enabled: true
         Logging:
-          Bucket: !GetAtt S3BucketLogs.DomainName
+          Bucket: !Ref 'S3Logs'
           IncludeCookies: false
           Prefix: 'cdn/'
         Origins:
