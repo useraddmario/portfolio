@@ -20,7 +20,7 @@ Parameters:
   CertificateArn:
     Description: cert arn
     Type: String
-    Default: arn:aws:acm:us-west-2:089634162715:certificate/0cd88b0b-d816-4077-a776-1339e3450906
+    Default: arn:aws:acm:us-east-1:089634162715:certificate/760d87a7-008a-4450-82d7-f1ee3f9d3741
 
 Resources:
 
