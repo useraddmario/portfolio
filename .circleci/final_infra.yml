@@ -31,7 +31,7 @@ Resources:
     DeletionPolicy: Delete
     Properties:
       AccessControl: PublicRead
-      BucketName: !Sub '${AWS::StackName}-root'
+      BucketName: !Sub '${DomainName}'
       LoggingConfiguration:
         DestinationBucketName: !Ref S3BucketLogs
         LogFilePrefix: 'cdn/'
@@ -50,11 +50,12 @@ Resources:
             Action: 's3:GetObject'
             Principal: '*'
             Resource: !Sub '${S3BucketRoot.Arn}/*'
+
   S3BucketSub:
     Type: AWS::S3::Bucket
     DeletionPolicy: Delete
     Properties:
-      BucketName: !Sub 'www.${AWS::StackName}'
+      BucketName: !Sub 'www.${DomainName}'
       AccessControl: BucketOwnerFullControl
       WebsiteConfiguration:
         RedirectAllRequestsTo:
