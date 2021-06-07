@@ -24,21 +24,21 @@ jobs:
             # check if stack exists, if so update else deploy
             present=$(aws cloudformation list-stacks \
               --stack-status-filter "CREATE_COMPLETE" "UPDATE_COMPLETE" \
-              --query 'StackSummaries[?StackName==`portfolio`].StackName[]' \
+              --query 'StackSummaries[?StackName==`personal`].StackName[]' \
               --output text)
             echo $present
             echo $CIRCLE_WORKFLOW_ID
             echo ${CIRCLE_WORKFLOW_ID:0:7}
-            if [ "$present" == "portfolio" ]
+            if [ "$present" == "personal" ]
             then
               aws cloudformation update-stack \
-                --stack-name portfolio \
+                --stack-name personal \
                 --template-body file://final_infra.yml \
                 --parameters ParameterKey=PipelineID,ParameterValue=${CIRCLE_WORKFLOW_ID:0:7}
                 #--template-body file://cloudfront.yml
             else
               aws cloudformation deploy \
-                --stack-name portfolio \
+                --stack-name personal \
                 --template-file ./final_infra.yml \
                 --parameter-overrides PipelineID=${CIRCLE_WORKFLOW_ID:0:7}
                 #--template-file ./cloudfront.yml \
