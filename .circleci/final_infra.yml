@@ -13,18 +13,16 @@ Parameters:
     Description: Subdomain
     Type: String
     Default: www.useraddmario.com
+  S3Logs:
+    Description: S3 Logs bucket
+    Type: String
+    Default: aws-cloudtrail-logs-089634162715-b8e00a06
   CertificateArn:
     Description: cert arn
     Type: String
     Default: arn:aws:acm:us-west-2:089634162715:certificate/0cd88b0b-d816-4077-a776-1339e3450906
 
 Resources:
-  S3BucketLogs:
-    Type: AWS::S3::Bucket
-    DeletionPolicy: Delete
-    Properties:
-      AccessControl: LogDeliveryWrite
-      BucketName: !Sub '${AWS::StackName}-logs'
 
   S3BucketRoot:
     Type: AWS::S3::Bucket
@@ -33,7 +31,7 @@ Resources:
       AccessControl: PublicRead
       BucketName: !Sub '${DomainName}'
       LoggingConfiguration:
-        DestinationBucketName: !Ref S3BucketLogs
+        DestinationBucketName: !Ref S3Logs
         LogFilePrefix: 'cdn/'
       WebsiteConfiguration:
         ErrorDocument: '404.html'
