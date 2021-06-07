@@ -31,6 +31,7 @@ jobs:
               --output text)
             echo $present
             echo $CIRCLE_WORKFLOW_ID
+            echo ${CIRCLE_WORKFLOW_ID:0:7}
             if [ "$present" == "maindomain" ]
             then
               aws cloudformation update-stack \
@@ -38,6 +39,7 @@ jobs:
                 --template-body file://infra.yml
                 --parameters ParameterKey=PipelineID,ParameterValue=${CIRCLE_WORKFLOW_ID:0:7}
                 #--template-body file://cloudfront.yml
+                echo "test1"
               aws cloudformation update-stack \
                 --stack-name maindomain2 \
                 --template-body file://dist.yml
@@ -49,6 +51,7 @@ jobs:
                 --template-file ./infra.yml \
                 --parameter-overrides PipelineID=${CIRCLE_WORKFLOW_ID:0:7}
                 #--template-file ./cloudfront.yml \
+                echo "test2"
               aws cloudformation deploy \
                 --stack-name maindomain2 \
                 --template-file ./dist.yml \
