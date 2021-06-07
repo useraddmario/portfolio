@@ -93,7 +93,7 @@ Resources:
         HttpVersion: http2
         IPV6Enabled: true
         Logging:
-          Bucket: !Ref 'S3Logs'
+          Bucket: !Ref S3Logs
           IncludeCookies: false
           Prefix: 'cdn/'
         Origins:
@@ -110,7 +110,7 @@ Resources:
             Id: !Sub 'S3-${AWS::StackName}-root'
         PriceClass: PriceClass_200
         ViewerCertificate:
-          AcmCertificateArn: !Ref 'CertificateArn'
+          AcmCertificateArn: !Ref CertificateArn
           MinimumProtocolVersion: TLSv1.1_2016
           SslSupportMethod: 'sni-only'
 
