@@ -35,15 +35,15 @@ jobs:
             then
               aws cloudformation update-stack \
                 --stack-name maindomain \
-                #--template-body file://cloudfront.yml
-                --template-body file://infra1.yml
+                --template-body file://infra.yml
                 --parameters ParameterKey=PipelineID,ParameterValue=${CIRCLE_WORKFLOW_ID:0:7}
+                #--template-body file://cloudfront.yml
             else
               aws cloudformation deploy \
                 --stack-name maindomain \
-                #--template-file ./cloudfront.yml \
-                --template-file ./infra1.yml \
+                --template-file ./infra.yml \
                 --parameter-overrides PipelineID=${CIRCLE_WORKFLOW_ID:0:7}
+                #--template-file ./cloudfront.yml \
             fi
            
             aws s3 cp index.html s3://useraddmario.com/

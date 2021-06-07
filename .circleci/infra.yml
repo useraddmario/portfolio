@@ -1,0 +1,70 @@
+
+Parameters:
+  PipelineID:
+    Description: Unique identifier.
+    Type: String
+  DomainName:
+    Description: Domain/S3 bucket name
+    Type: String
+    Default: useraddmario.com
+  SubDomain:
+    Description: Subdomain
+    Type: String
+    Default: www.useraddmario.com
+  CertificateArn:
+    Description: cert arn
+    Type: String
+    Default: arn:aws:acm:us-west-2:089634162715:certificate/0cd88b0b-d816-4077-a776-1339e3450906
+
+Resources:
+  RootBucket:
+    Type: AWS::S3::Bucket
+    DeletionPolicy: Delete
+    Properties:
+      BucketName: !Ref DomainName
+      AccessControl: PublicRead
+      WebsiteConfiguration:
+        IndexDocument: index.html
+        ErrorDocument: 404.html
+
+  BucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      PolicyDocument:
+        Id: PortfolioRootS3Policy
+        Version: 2012-10-17
+        Statement:
+          - Sid: PublicReadForGetBucketObjects
+            Effect: Allow
+            Principal: '*'
+            Action: 's3:GetObject'
+            Resource: !Join
+              - ''
+              - - 'arn:aws:s3:::'
+                - !Ref RootBucket
+                - /*
+      Bucket: !Ref RootBucket
+
+  WWWBucket:
+    Type: AWS::S3::Bucket
+    DeletionPolicy: Delete
+    Properties:
+      BucketName: !Ref SubDomain
+      AccessControl: BucketOwnerFullControl
+      WebsiteConfiguration:
+        RedirectAllRequestsTo:
+          HostName: !Ref DomainName
+
+  CloudFrontOriginAccessIdentity:
+    Type: AWS::CloudFront::CloudFrontOriginAccessIdentity
+    Properties:
+      CloudFrontOriginAccessIdentityConfig:
+        Comment: !Sub 'CloudFront OAI for ${SubDomain}'
+        
+Outputs:
+  PipelineID:
+    Description: Pipeline ID for current deployment
+    Value: !Sub ${PipelineID}
+    Export:
+      Name: PipelineID
+  
