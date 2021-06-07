@@ -79,8 +79,6 @@ Resources:
         RedirectAllRequestsTo:
           HostName: !Ref DomainName
 
-
-
   CloudFrontDistribution:
     Type: AWS::CloudFront::Distribution
     Properties:
