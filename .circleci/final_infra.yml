@@ -148,6 +148,23 @@ Resources:
           DNSName: !GetAtt CloudFrontDistribution.DomainName
           EvaluateTargetHealth: false
           HostedZoneId: Z2FDTNDATAQYW2
+  Route53RecordSetGroup:
+    Type: AWS::Route53::RecordSetGroup
+    Properties:
+      HostedZoneName: !Sub '${DomainNameOrg}.'
+      RecordSets:
+      - Name: !Ref DomainNameOrg
+        Type: A
+        AliasTarget:
+          DNSName: !GetAtt CloudFrontDistribution.DomainName
+          EvaluateTargetHealth: false
+          HostedZoneId: Z2FDTNDATAQYW2
+      - Name: !Sub 'www.${DomainNameOrg}'
+        Type: A
+        AliasTarget:
+          DNSName: !GetAtt CloudFrontDistribution.DomainName
+          EvaluateTargetHealth: false
+          HostedZoneId: Z2FDTNDATAQYW2
 
 Outputs:
   PipelineID:
