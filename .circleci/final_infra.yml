@@ -9,10 +9,10 @@ Parameters:
   PipelineID:
     Description: Unique identifier.
     Type: String
-  SubDomain:
-    Description: Subdomain
+  DomainNameOrg:
+    Description: .org
     Type: String
-    Default: www.useraddmario.com
+    Default: useraddmario.org
   S3Logs:
     Description: S3 Logs bucket
     Type: String
@@ -66,6 +66,10 @@ Resources:
       DistributionConfig:
         Aliases:
           - !Ref DomainName
+          - !Sub 'www.${DomainName}'
+          - !Ref DomainNameOrg
+          - !Sub 'www.${DomainNameOrg}'
+
         CustomErrorResponses:
           - ErrorCachingMinTTL: 60
             ErrorCode: 404
