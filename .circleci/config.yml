@@ -1,9 +1,15 @@
 version: 2.1
 
 parameters:
-  domain:
+  domain_name:
     type: string
-    default: "useraddmario.org"
+    default: "useraddmario.com"
+  stack_name_web:
+    type: string
+    default: "portfolio-web"
+  stack_name_cdn:
+    type: string
+    default: "portfolio-cdn"
 
 commands:
   dependencies:
@@ -11,43 +17,162 @@ commands:
       - run: yum -y install tar less gzip # needed to attach_workspace
 
 jobs:
-  update_cloudfront_dist:
+  generate_hugo_files:
     docker:
-      - image: amazon/aws-cli
+      - image: cimg/base:stable-20.04
     steps:
       - checkout
       - run:
-          name: update cloudFront distribution
+          name:
+          command: |
+            # starts in /home/circleci/
+            wget https://github.com/gohugoio/hugo/releases/download/v0.83.1/hugo_extended_0.83.1_Linux-64bit.deb
+            sudo apt install ./hugo_extended_0.83.1_Linux-64bit.deb
+            sudo rm -f ./hugo_extended_0.83.1_Linux-64bit.deb
+            git submodule sync --recursive
+            git submodule update --recursive --init
+            hugo -v
+            ls -lah
+            pwd
+      - persist_to_workspace:
+          root: /home/circleci
+          paths:
+            - project
+
+  create_s3_and_deploy_latest:
+    docker:
+      - image: amazon/aws-cli
+    steps:
+      - dependencies
+      - attach_workspace:
+          at: /root
+      - run:
+          name: "Query for last deployment id"
+          command: |
+            cd /root/project
+            aws cloudformation list-exports \
+              --query "Exports[?Name==\`PipelineID\`].Value" \
+              --no-paginate --output text \
+              > last_deploy_id
+            cat last_deploy_id
+
+      - run:
+          name: "Create/Update S3 infrastructure"
           command: |
             # pwd in /root/project by default
             cd .circleci
             # check if stack exists, if so update else deploy
             present=$(aws cloudformation list-stacks \
               --stack-status-filter "CREATE_COMPLETE" "UPDATE_COMPLETE" \
-              --query 'StackSummaries[?StackName==`personal`].StackName[]' \
+              --query "StackSummaries[?StackName=='<< pipeline.parameters.stack_name_web >>'].StackName[]" \
               --output text)
             echo $present
             echo $CIRCLE_WORKFLOW_ID
             echo ${CIRCLE_WORKFLOW_ID:0:7}
-            if [ "$present" == "personal" ]
+            if [ "$present" == << pipeline.parameters.stack_name_web >> ]
             then
               aws cloudformation update-stack \
-                --stack-name personal \
-                --template-body file://final_infra.yml \
+                --stack-name << pipeline.parameters.stack_name_web >> \
+                --template-body file://buckets.yml \
                 --parameters ParameterKey=PipelineID,ParameterValue=${CIRCLE_WORKFLOW_ID:0:7}
-                #--template-body file://cloudfront.yml
             else
               aws cloudformation deploy \
-                --stack-name personal \
-                --template-file ./final_infra.yml \
+                --stack-name << pipeline.parameters.stack_name_web >> \
+                --template-file ./buckets.yml \
                 --parameter-overrides PipelineID=${CIRCLE_WORKFLOW_ID:0:7}
-                #--template-file ./cloudfront.yml \
             fi
+
+      - run:
+          name: "Sync latest version to S3 bucket"
+          command: |
+            cd /root/project/public/
+            # Upload the Hugo generated files
+            aws s3 cp . s3://<< pipeline.parameters.domain_name >>/"portfolio-${CIRCLE_WORKFLOW_ID:0:7}" --recursive
+
+      - persist_to_workspace:
+          root: /root/project
+          paths:
+            - last_deploy_id
+
+  deploy_or_update_cf_dist:
+    docker:
+      - image: amazon/aws-cli
+    steps:
+      - checkout
+      - run:
+          name:  deploy/update cloudFront distribution
+          command: |
+            # pwd in /root/project by default
+            cd .circleci
+            # check if stack exists, if so update else deploy
+            present=$(aws cloudformation list-stacks \
+              --stack-status-filter "CREATE_COMPLETE" "UPDATE_COMPLETE" \
+              --query "StackSummaries[?StackName=='<< pipeline.parameters.stack_name_cdn >>'].StackName[]" \
+              --output text)
+            echo $present
+            if [ "$present" == << pipeline.parameters.stack_name_cdn >> ]
+            then
+              # update existing distribution
+              aws cloudformation update-stack \
+                --stack-name << pipeline.parameters.stack_name_cdn >> \
+                --template-body file://cloudfront.yml \
+                --parameters ParameterKey=PipelineID,ParameterValue=${CIRCLE_WORKFLOW_ID:0:7}
+              # wait until complete
+              aws cloudformation wait stack-update-complete \
+                --stack-name << pipeline.parameters.stack_name_cdn >>
+            else
+              # init distribution
+              aws cloudformation deploy \
+                --stack-name << pipeline.parameters.stack_name_cdn >> \
+                --template-file ./cloudfront.yml \
+                --parameter-overrides PipelineID=${CIRCLE_WORKFLOW_ID:0:7}
+              # wait until complete
+              aws cloudformation wait stack-create-complete \
+                --stack-name << pipeline.parameters.stack_name_cdn >>  
+            fi
+      - run:
+          name:  promote to production
+          command: |
+            # pwd in /root/project by default
+            cd .circleci
+            # Query for the CloudFront Distribution ID
+            export DistID=$(aws cloudformation describe-stacks \
+            --stack-name portfolio-cdn \
+            --query 'Stacks[0].Outputs[0].OutputValue' \
+            --output text)
+            # Invalidate the distribution to promote
+            aws cloudfront create-invalidation \
+              --distribution-id $DistID \
+              --paths "/*"
            
-            aws s3 cp index.html s3://useraddmario.com/
+  clean_up_old_front_end:
+    docker:
+      - image: amazon/aws-cli
+    steps:
+      - dependencies
+      - attach_workspace:
+          at: /root
+      - run:
+          name: "Remove old version"
+          command: |
+            PreviousPipelineID=$(cat /root/last_deploy_id)
+            echo $PreviousPipelineID
+            aws s3 rm "s3://<< pipeline.parameters.domain_name >>/portfolio-${PreviousPipelineID}" --recursive
 
 workflows:
-  deploy_workflow:
+  hugo_portfolio_workflow:
     jobs:
-      - update_cloudfront_dist:
+      - generate_hugo_files
+      - create_s3_and_deploy_latest:
           context: aws
+          requires:
+            - generate_hugo_files
+      - deploy_or_update_cf_dist:
+          context: aws
+          requires:
+            - create_s3_and_deploy_latest
+      - clean_up_old_front_end:
+          context: aws
+          requires:
+            - deploy_or_update_cf_dist
+

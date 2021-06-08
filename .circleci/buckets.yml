@@ -1,95 +1,83 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: My portfolio S3 static website
+
 Parameters:
-  RootDomainName:
-    Description: Domain name
+  DomainName:
+    Description: Domain name of website
     Type: String
     Default: useraddmario.com
-Mappings:
-  RegionMap:
-    us-east-1:
-      S3hostedzoneID: Z3AQBSTGFYJSTF
-      websiteendpoint: s3-website-us-east-1.amazonaws.com
-    us-west-1:
-      S3hostedzoneID: Z2F56UZL2M1ACD
-      websiteendpoint: s3-website-us-west-1.amazonaws.com
-    us-west-2:
-      S3hostedzoneID: Z3BJ6K6RIION7M
-      websiteendpoint: s3-website-us-west-2.amazonaws.com
-    eu-west-1:
-      S3hostedzoneID: Z1BKCTXD74EZPE
-      websiteendpoint: s3-website-eu-west-1.amazonaws.com
-    ap-southeast-1:
-      S3hostedzoneID: Z3O0J2DXBE1FTB
-      websiteendpoint: s3-website-ap-southeast-1.amazonaws.com
-    ap-southeast-2:
-      S3hostedzoneID: Z1WCIGYICN2BYD
-      websiteendpoint: s3-website-ap-southeast-2.amazonaws.com
-    ap-northeast-1:
-      S3hostedzoneID: Z2M4EHUR26P7ZW
-      websiteendpoint: s3-website-ap-northeast-1.amazonaws.com
-    sa-east-1:
-      S3hostedzoneID: Z31GFT0UA1I2HV
-      websiteendpoint: s3-website-sa-east-1.amazonaws.com
+  PipelineID:
+    Description: Unique identifier.
+    Type: String
+  DomainNameOrg:
+    Description: .org
+    Type: String
+    Default: useraddmario.org
+  S3Logs:
+    Description: S3 Logs bucket
+    Type: String
+    Default: aws-cloudtrail-logs-089634162715-b8e00a06
+
 Resources:
-  RootBucket:
+
+  S3BucketRoot:
     Type: AWS::S3::Bucket
     DeletionPolicy: Delete
     Properties:
-      BucketName: !Ref RootDomainName
       AccessControl: PublicRead
+      BucketName: !Sub '${DomainName}'
+      LoggingConfiguration:
+        DestinationBucketName: !Ref S3Logs
+        LogFilePrefix: 'cdn/'
       WebsiteConfiguration:
-        IndexDocument: index.html
-        ErrorDocument: 404.html
-  BucketPolicy:
+        ErrorDocument: '404.html'
+        IndexDocument: 'index.html'
+
+  S3BucketPolicy:
     Type: AWS::S3::BucketPolicy
     Properties:
+      Bucket: !Ref S3BucketRoot
       PolicyDocument:
-        Id: PortfolioRootS3Policy
-        Version: 2012-10-17
+        Version: '2012-10-17'
         Statement:
-          - Sid: PublicReadForGetBucketObjects
-            Effect: Allow
-            Principal: '*'
+          - Effect: 'Allow'
             Action: 's3:GetObject'
-            Resource: !Join
-              - ''
-              - - 'arn:aws:s3:::'
-                - !Ref RootBucket
-                - /*
-      Bucket: !Ref RootBucket
-  WWWBucket:
+            Principal: '*'
+            Resource: !Sub '${S3BucketRoot.Arn}/*'
+
+  S3BucketSub:
     Type: AWS::S3::Bucket
     DeletionPolicy: Delete
     Properties:
-      BucketName: !Sub
-          - www.${Domain}
-          - Domain: !Ref RootDomainName
+      BucketName: !Sub 'www.${DomainName}'
       AccessControl: BucketOwnerFullControl
       WebsiteConfiguration:
         RedirectAllRequestsTo:
-          HostName: !Ref RootBucket
-  myDNS:
-    Type: AWS::Route53::RecordSetGroup
+          HostName: !Ref DomainName
+
+  S3BucketOrgSub:
+    Type: AWS::S3::Bucket
+    DeletionPolicy: Delete
     Properties:
-      HostedZoneName: !Sub 
-          - ${Domain}.
-          - Domain: !Ref RootDomainName
-      Comment: Zone apex alias.
-      RecordSets:
-      - 
-        Name: !Ref RootDomainName
-        Type: A
-        AliasTarget:
-          HostedZoneId: !FindInMap [ RegionMap, !Ref 'AWS::Region', S3hostedzoneID]
-          DNSName: !FindInMap [ RegionMap, !Ref 'AWS::Region', websiteendpoint]
-      -
-        Name: !Sub
-            - www.${Domain}
-            - Domain: !Ref RootDomainName
-        Type: CNAME
-        TTL: 60
-        ResourceRecords: 
-            - !Sub "${RootDomainName}."
+      BucketName: !Sub 'www.${DomainNameOrg}'
+      AccessControl: BucketOwnerFullControl
+      WebsiteConfiguration:
+        RedirectAllRequestsTo:
+          HostName: !Ref DomainName
+
+  S3BucketSubOrg:
+    Type: AWS::S3::Bucket
+    DeletionPolicy: Delete
+    Properties:
+      BucketName: !Ref DomainNameOrg
+      AccessControl: BucketOwnerFullControl
+      WebsiteConfiguration:
+        RedirectAllRequestsTo:
+          HostName: !Ref DomainName
+
 Outputs:
-  WebsiteURL:
-    Value: !GetAtt RootBucket.WebsiteURL
-    Description: URL for website hosted on S3
+  PipelineID:
+    Description: Pipeline ID to clean up after the next deployment
+    Value: !Sub ${PipelineID}
+    Export:
+      Name: PipelineID

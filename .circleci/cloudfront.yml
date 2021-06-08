@@ -1,142 +1,114 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: My portfolio S3 static website
+
 Parameters:
+  DomainName:
+    Description: Domain name of website
+    Type: String
+    Default: useraddmario.com
   PipelineID:
     Description: Unique identifier.
     Type: String
-  DomainName:
-    Description: Domain/S3 bucket name
+  DomainNameOrg:
+    Description: .org
     Type: String
-    Default: useraddmario.com
-  SubDomain:
-    Description: Subdomain
-    Type: String
-    Default: www.useraddmario.com
+    Default: useraddmario.org
   CertificateArn:
-    Description: cert arn
+    Description: cert arn 
     Type: String
-    Default: arn:aws:acm:us-west-2:089634162715:certificate/0cd88b0b-d816-4077-a776-1339e3450906
+    Default: arn:aws:acm:us-east-1:089634162715:certificate/760d87a7-008a-4450-82d7-f1ee3f9d3741
 
 Resources:
-  RootBucket:
-    Type: AWS::S3::Bucket
-    DeletionPolicy: Delete
-    Properties:
-      BucketName: !Ref DomainName
-      AccessControl: PublicRead
-      WebsiteConfiguration:
-        IndexDocument: index.html
-        ErrorDocument: 404.html
-
-  BucketPolicy:
-    Type: AWS::S3::BucketPolicy
-    Properties:
-      PolicyDocument:
-        Id: PortfolioRootS3Policy
-        Version: 2012-10-17
-        Statement:
-          - Sid: PublicReadForGetBucketObjects
-            Effect: Allow
-            Principal: '*'
-            Action: 's3:GetObject'
-            Resource: !Join
-              - ''
-              - - 'arn:aws:s3:::'
-                - !Ref RootBucket
-                - /*
-      Bucket: !Ref RootBucket
-
-  WWWBucket:
-    Type: AWS::S3::Bucket
-    DeletionPolicy: Delete
-    Properties:
-      BucketName: !Ref SubDomain
-      AccessControl: BucketOwnerFullControl
-      WebsiteConfiguration:
-        RedirectAllRequestsTo:
-          HostName: !Ref DomainName
-
-  PortfolioDist:
+  CloudFrontDistribution:
     Type: AWS::CloudFront::Distribution
     Properties:
       DistributionConfig:
+        Aliases:
+          - !Ref DomainName
+          - !Sub 'www.${DomainName}'
+          - !Ref DomainNameOrg
+          - !Sub 'www.${DomainNameOrg}'
+
+        CustomErrorResponses:
+          - ErrorCachingMinTTL: 60
+            ErrorCode: 404
+            ResponseCode: 404
+            ResponsePagePath: '/404.html'
         DefaultCacheBehavior:
           AllowedMethods:
             - GET
             - HEAD
-          ViewerProtocolPolicy: redirect-to-https
-          DefaultTTL: 3600
+          CachedMethods:
+            - GET
+            - HEAD
+          Compress: true
+          DefaultTTL: 86400
           ForwardedValues:
             Cookies:
               Forward: none
             QueryString: true
-          TargetOriginId: !Join
-            - ''
-            - - Sub! '${DomainName}.s3-website.'
-              - !Ref "AWS::Region"
-              - '.amazonaws.com'
-        Enabled: 'true'
-        Aliases:
-        - !Ref SubDomain
+          MaxTTL: 31536000
+          SmoothStreaming: false
+          TargetOriginId: !Sub 'S3-${AWS::StackName}-root'
+          ViewerProtocolPolicy: 'redirect-to-https'
+        DefaultRootObject: 'index.html'
+        Enabled: true
         Origins:
-        - DomainName: !Join
-            - ''
-            - - Sub! '${DomainName}.s3-website.'
-              - !Ref "AWS::Region"
-              - '.amazonaws.com'
-          Id: !Ref DomainName
-          OriginPath: !Sub "/portfolio-${PipelineID}"
-          #S3OriginConfig:
-          #  OriginAccessIdentity: !Join 
-          #    - ''
-          #    - - 'origin-access-identity/cloudfront/'
-          #      - !Ref CloudFrontOriginAccessIdentity
-          CustomOriginConfig:
-            OriginProtocolPolicy: match-viewer
-        DefaultRootObject: index.html
+          - CustomOriginConfig:
+              HTTPPort: 80
+              HTTPSPort: 443
+              OriginKeepaliveTimeout: 5
+              OriginProtocolPolicy: 'https-only'
+              OriginReadTimeout: 30
+              OriginSSLProtocols:
+                - TLSv1.1
+                - TLSv1.2
+            DomainName: !Sub "${DomainName}.s3.amazonaws.com"
+            OriginPath: !Sub "/portfolio-${PipelineID}"
+            Id: !Sub 'S3-${AWS::StackName}-root'
         PriceClass: PriceClass_200
         ViewerCertificate:
-          AcmCertificateArn: !Ref 'CertificateArn'
-          MinimumProtocolVersion: TLSv1.2_2019
+          AcmCertificateArn: !Ref CertificateArn
+          MinimumProtocolVersion: TLSv1.1_2016
           SslSupportMethod: 'sni-only'
 
-  CloudFrontOriginAccessIdentity:
-    Type: AWS::CloudFront::CloudFrontOriginAccessIdentity
-    Properties:
-      CloudFrontOriginAccessIdentityConfig:
-        Comment: !Sub 'CloudFront OAI for ${SubDomain}'
-        
-  Route53RecordSetGroup:
+  DomainRecordSetGroup:
     Type: AWS::Route53::RecordSetGroup
     Properties:
       HostedZoneName: !Sub '${DomainName}.'
       RecordSets:
-      - Name: !Sub '${SubDomain}'
-        Type: 'A'
+      - Name: !Ref DomainName
+        Type: A
         AliasTarget:
-          DNSName: !GetAtt 'PortfolioDist.DomainName'
+          DNSName: !GetAtt CloudFrontDistribution.DomainName
           EvaluateTargetHealth: false
-          # Always this HostedZoneId for CF
-          HostedZoneId: 'Z2FDTNDATAQYW2'
+          HostedZoneId: Z2FDTNDATAQYW2
+      - Name: !Sub 'www.${DomainName}'
+        Type: A
+        AliasTarget:
+          DNSName: !GetAtt CloudFrontDistribution.DomainName
+          EvaluateTargetHealth: false
+          HostedZoneId: Z2FDTNDATAQYW2
 
-  ApexRoute53RecordSetGroup:
+  DomainOrgRecordSetGroup:
     Type: AWS::Route53::RecordSetGroup
     Properties:
-      HostedZoneName: !Sub '${DomainName}.'
+      HostedZoneName: !Sub '${DomainNameOrg}.'
       RecordSets:
-      - Name: !Ref 'DomainName'
-        Type: 'A'
+      - Name: !Ref DomainNameOrg
+        Type: A
         AliasTarget:
-          DNSName: !GetAtt 'PortfolioDist.DomainName'
+          DNSName: !GetAtt CloudFrontDistribution.DomainName
           EvaluateTargetHealth: false
-          # Always this HostedZoneId for CF
-          HostedZoneId: 'Z2FDTNDATAQYW2'
+          HostedZoneId: Z2FDTNDATAQYW2
+      - Name: !Sub 'www.${DomainNameOrg}'
+        Type: A
+        AliasTarget:
+          DNSName: !GetAtt CloudFrontDistribution.DomainName
+          EvaluateTargetHealth: false
+          HostedZoneId: Z2FDTNDATAQYW2
+
 Outputs:
-  PipelineID:
-    Description: Pipeline ID for current deployment
-    Value: !Sub ${PipelineID}
-    Export:
-      Name: PipelineID
-  PortfolioDistribution:
-    Description: CloudFront Distribution ID
-    Value: !Ref PortfolioDist
-    Export:
-      Name: PortfolioDistributionID
+  CloudFrontDistributionID:
+    Description: CloudFront Distribution ID for the promotion to production
+    Value: !Ref CloudFrontDistribution
