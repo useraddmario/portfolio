@@ -69,7 +69,7 @@ jobs:
             echo $present
             echo $CIRCLE_WORKFLOW_ID
             echo ${CIRCLE_WORKFLOW_ID:0:7}
-            if [ "$present" == << pipeline.parameters.stack_name_web >> ]
+            if [ "$present" == '<< pipeline.parameters.stack_name_web >>' ]
             then
               aws cloudformation update-stack \
                 --stack-name << pipeline.parameters.stack_name_web >> \
