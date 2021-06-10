@@ -102,9 +102,9 @@ Resources:
           - Effect: 'Allow'
             Action: 's3:GetObject'
             CanonicalUser: !GetAtt CloudFrontOriginAccessIdentity.S3CanonicalUserId
-            Resource: !ImportValue
-              'Fn::Sub': '${S3BucketRoot}/*'
-
+            Resource: - !Sub
+              - 'arn:aws:s3:::${BucketName}/*'
+              - BucketName : !ImportedValue 'S3BucketRoot'
 Outputs:
   CloudFrontDistributionID:
     Description: CloudFront Distribution ID for the promotion to production
