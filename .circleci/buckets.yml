@@ -81,3 +81,6 @@ Outputs:
     Value: !Sub ${PipelineID}
     Export:
       Name: PipelineID
+  S3BucketRoot:
+    Description: Root bucket ARN
+    Value: !GetAtt S3BucketRoot.Arn
