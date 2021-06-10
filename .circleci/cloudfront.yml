@@ -106,13 +106,13 @@ Resources:
   S3BucketPolicy:
     Type: AWS::S3::BucketPolicy
     Properties:
-      Bucket: !Ref S3BucketRoot
+      Bucket: !Sub '${DomainName}'
       PolicyDocument:
         Version: '2012-10-17'
         Statement:
           - Effect: 'Allow'
             Action: 's3:GetObject'
-            Principal: !Sub 'arn:aws:iam::cloudfront:user/CloudFront Origin Access Identity ${CloudFrontOriginIdentity}'
+            Principal: !Sub 'arn:aws:iam::cloudfront:user/CloudFront Origin Access Identity ${CloudFrontOriginAccessIdentity}'
             Resource: !Sub '${DomainName}/*'
 
 
