@@ -102,7 +102,7 @@ Resources:
           - Effect: 'Allow'
             Action: 's3:GetObject'
             CanonicalUser: !GetAtt CloudFrontOriginAccessIdentity.S3CanonicalUserId
-            Resource: - !Sub
+            Resource: !Sub
               - 'arn:aws:s3:::${BucketName}/*'
               - BucketName : !ImportedValue 'S3BucketRoot'
 Outputs:
