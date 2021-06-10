@@ -29,9 +29,13 @@ Resources:
           - !Ref DomainNameOrg
           - !Sub 'www.${DomainNameOrg}'
         DefaultCacheBehavior:
-          AllowedMethods:
-            - HEAD
-            - GET
+          ViewerProtocolPolicy: https-only
+          DefaultTTL: 3600
+          ForwardedValues:
+            Cookies:
+              Forward: none
+            QueryString: true
+          TargetOriginId: !Sub 'S3-${AWS::StackName}-root'
         DefaultRootObject: index.html
         Enabled: true
         Origins:
