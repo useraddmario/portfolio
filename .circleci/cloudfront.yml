@@ -29,7 +29,7 @@ Resources:
           - !Ref DomainNameOrg
           - !Sub 'www.${DomainNameOrg}'
         DefaultCacheBehavior:
-          ViewerProtocolPolicy: https-only
+          ViewerProtocolPolicy: redirect-to-https
           DefaultTTL: 3600
           ForwardedValues:
             Cookies:
@@ -42,8 +42,9 @@ Resources:
           - DomainName: !Sub '${DomainName}.s3.amazonaws.com'
             Id: !Sub 'S3-${AWS::StackName}-root'
             S3OriginConfig:
-              OriginAccessIdentity: !Sub origin-access-identity/cloudfront/${CloudFrontOriginAccessIdentity}
-            OriginPath: !Sub '/${PipelineID}'
+              OriginAccessIdentity:
+                !Join ['', ['origin-access-identity/cloudfront/', !Ref CloudFrontOriginAccessIdentity]]
+              OriginPath: !Sub '/portfolio-${PipelineID}'
         PriceClass: PriceClass_200
         ViewerCertificate:
           AcmCertificateArn: !Ref CertificateArn
@@ -90,6 +91,19 @@ Resources:
           DNSName: !GetAtt CloudFrontDistribution.DomainName
           EvaluateTargetHealth: false
           HostedZoneId: Z2FDTNDATAQYW2
+
+  S3BucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref DomainName
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: 'Allow'
+            Action: 's3:GetObject'
+            CanonicalUser: !GetAtt CloudFrontOriginAccessIdentity.S3CanonicalUserId
+            Resource: !ImportValue
+              'Fn::Sub': '${S3BucketRoot}/*'
 
 Outputs:
   CloudFrontDistributionID:
