@@ -44,7 +44,7 @@ Resources:
             S3OriginConfig:
               OriginAccessIdentity:
                 !Join ['', ['origin-access-identity/cloudfront/', !Ref CloudFrontOriginAccessIdentity]]
-              OriginPath: !Sub '/portfolio-${PipelineID}'
+            OriginPath: !Sub '/portfolio-${PipelineID}'
         PriceClass: PriceClass_200
         ViewerCertificate:
           AcmCertificateArn: !Ref CertificateArn
