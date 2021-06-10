@@ -23,6 +23,12 @@ Resources:
     Type: AWS::CloudFront::Distribution
     Properties:
       DistributionConfig:
+        Origins:
+          - DomainName: !Sub '${DomainName}.s3.amazonaws.com'
+            Id: !Sub 'S3-${AWS::StackName}-root'
+            OriginPath: !Sub "/portfolio-${PipelineID}"
+        DefaultRootObject: index.html
+        Enabled: true
         Aliases:
           - !Ref DomainName
           - !Sub 'www.${DomainName}'
@@ -45,12 +51,6 @@ Resources:
           SmoothStreaming: false
           TargetOriginId: !Sub 'S3-${AWS::StackName}-root'
           ViewerProtocolPolicy: redirect-to-https
-        DefaultRootObject: index.html
-        Enabled: true
-        Origins:
-          - DomainName: !Sub '${DomainName}.s3.amazonaws.com'
-            Id: !Sub 'S3-${AWS::StackName}-root'
-            OriginPath: !Sub "/portfolio-${PipelineID}"
         PriceClass: PriceClass_200
         ViewerCertificate:
           AcmCertificateArn: !Ref CertificateArn
@@ -92,19 +92,6 @@ Resources:
           DNSName: !GetAtt CloudFrontDistribution.DomainName
           EvaluateTargetHealth: false
           HostedZoneId: Z2FDTNDATAQYW2
-
-# S3BucketPolicy:
-#    Type: AWS::S3::BucketPolicy
-#    Properties:
-#      Bucket: !Sub '${DomainName}'
-#      PolicyDocument:
-#        Version: '2012-10-17'
-#        Statement:
-#          - Effect: 'Allow'
-#            Action: 's3:GetObject'
-#            Principal: !Sub 'arn:aws:iam::cloudfront:user/CloudFront Origin Access Identity ${CloudFrontOriginAccessIdentity}'
-#            Resource: !Sub '${DomainName}/*'
-
 
 Outputs:
   CloudFrontDistributionID:
