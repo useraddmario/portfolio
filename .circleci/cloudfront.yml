@@ -43,7 +43,7 @@ Resources:
             Id: !Sub 'S3-${AWS::StackName}-root'
             S3OriginConfig:
               OriginAccessIdentity:
-                !Join ['', ['origin-access-identity/cloudfront/', !Ref CloudFrontOriginAccessIdentity]]
+                !Join ['', ['origin-access-identity/cloudfront/', !Ref CloudFrontOriginIdentity]]
             OriginPath: !Sub '/portfolio-${PipelineID}'
         PriceClass: PriceClass_200
         ViewerCertificate:
