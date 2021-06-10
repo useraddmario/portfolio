@@ -104,9 +104,7 @@ Resources:
             Action: 's3:GetObject'
             Principal:
               AWS: !Sub 'arn:aws:iam::cloudfront:user/CloudFront Origin Access Identity ${CloudFrontOriginIdentity}'
-            Resource: !Sub
-              - 'arn:aws:s3:::${BucketName}/*'
-              - BucketName : !ImportValue 'S3BucketRoot'
+            Resource: !Sub 'arn:aws:s3:::${DomainName}/*'
 Outputs:
   CloudFrontDistributionID:
     Description: CloudFront Distribution ID for the promotion to production
