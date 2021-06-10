@@ -80,3 +80,5 @@ Outputs:
   S3BucketRoot:
     Description: Root bucket ARN
     Value: !GetAtt S3BucketRoot.Arn
+    Export:
+      Name: S3BucketRoot
