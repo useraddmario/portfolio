@@ -24,7 +24,7 @@ Resources:
     Properties:
       DistributionConfig:
         Origins:
-          - DomainName: !Sub '${DomainName}.s3.amazonaws.com'
+          - DomainName: !Sub '${DomainName}.s3-website-${AWS::Region}.amazonaws.com'
             Id: !Sub 'S3-${AWS::StackName}-root'
             OriginPath: !Sub "/portfolio-${PipelineID}"
         DefaultRootObject: index.html
