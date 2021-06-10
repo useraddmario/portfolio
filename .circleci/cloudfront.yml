@@ -50,6 +50,7 @@ Resources:
           AcmCertificateArn: !Ref CertificateArn
           MinimumProtocolVersion: TLSv1.1_2016
           SslSupportMethod: sni-only
+
   CloudFrontOriginAccessIdentity:
     Type: AWS::CloudFront::CloudFrontOriginAccessIdentity
     Properties:
@@ -103,7 +104,7 @@ Resources:
             Action: 's3:GetObject'
             Principal:
               CanonicalUser:
-                Fn::GetAtt: [ CloudFrontOriginIdentity , S3CanonicalUserId ]
+                Fn::GetAtt: [ CloudFrontOriginAccessIdentity , S3CanonicalUserId ]
             Resource: !Sub
               - 'arn:aws:s3:::${BucketName}/*'
               - BucketName : !ImportValue 'S3BucketRoot'
