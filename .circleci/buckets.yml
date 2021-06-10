@@ -81,7 +81,3 @@ Outputs:
     Value: !Sub ${PipelineID}
     Export:
       Name: PipelineID
-  S3BucketRoot:
-    Description: Root Bucket Arn for OAI crossstack reference
-    Value: !GetAtt S3BucketRoot
-    
