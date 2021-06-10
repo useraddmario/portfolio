@@ -38,9 +38,9 @@ Resources:
               OriginSSLProtocols:
                 - TLSv1.1
                 - TLSv1.2
-              DomainName: !Sub '${DomainName}.s3-website-${AWS::Region}.amazonaws.com'
-              Id: !Sub 'S3-${AWS::StackName}-root'
-              OriginPath: !Sub "/portfolio-${PipelineID}"
+            DomainName: !Sub '${DomainName}.s3-website-${AWS::Region}.amazonaws.com'
+            Id: !Sub 'S3-${AWS::StackName}-root'
+            OriginPath: !Sub "/portfolio-${PipelineID}"
         DefaultRootObject: index.html
         Enabled: true
         DefaultCacheBehavior:
