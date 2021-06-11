@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: '2010-09-09'
-Description: My portfolio S3 static website
+Description: My S3 static website
 
 Parameters:
   DomainName:
@@ -105,6 +105,7 @@ Resources:
             Principal:
               AWS: !Sub 'arn:aws:iam::cloudfront:user/CloudFront Origin Access Identity ${CloudFrontOriginIdentity}'
             Resource: !Sub 'arn:aws:s3:::${DomainName}/*'
+
 Outputs:
   CloudFrontDistributionID:
     Description: CloudFront Distribution ID for the promotion to production

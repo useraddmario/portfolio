@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: '2010-09-09'
-Description: My portfolio S3 static website
+Description: My S3 static website
 
 Parameters:
   DomainName:
@@ -19,7 +19,6 @@ Parameters:
     Default: aws-cloudtrail-logs-089634162715-b8e00a06
 
 Resources:
-
   S3BucketRoot:
     Type: AWS::S3::Bucket
     DeletionPolicy: Delete
@@ -28,18 +27,6 @@ Resources:
       LoggingConfiguration:
         DestinationBucketName: !Ref S3Logs
         LogFilePrefix: 'cdn/'
-
-        #  S3BucketPolicy:
-        #Type: AWS::S3::BucketPolicy
-        #Properties:
-        #Bucket: !Ref S3BucketRoot
-        #PolicyDocument:
-        #Version: '2012-10-17'
-        #Statement:
-        #  - Effect: 'Allow'
-        #    Action: 's3:GetObject'
-        #    Principal: '*'
-        #    Resource: !Sub '${S3BucketRoot.Arn}/*'
 
   S3BucketSub:
     Type: AWS::S3::Bucket
