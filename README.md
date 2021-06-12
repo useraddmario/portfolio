@@ -19,6 +19,15 @@ Everything AWS is built/updated with two Cloudformation stacks, minus ACM which 
 * CloudFront
 * ACM
 
-## Lacking
+### Lacking
 
-I still need to add testing steps, monitoring and alerting.  After my other projects are polished, I guess.
+I still need to add testing steps, monitoring, and alerting; after my other projects are polished, I guess.
+
+
+### Built With
+
+- [Circle CI](www.circleci.com) - Cloud-based CI/CD service
+- [Hugo](https://gohugo.io/) - Open-source static site generator; markdown to HTML
+- [Amazon AWS](https://aws.amazon.com/) - Cloud services
+- [AWS CLI](https://aws.amazon.com/cli/) - Command-line tool for AWS
+- [CloudFormation](https://aws.amazon.com/cloudformation/) - Infrastrcuture as code
