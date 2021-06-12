@@ -1,6 +1,8 @@
 ![portfolio diagram](https://raw.githubusercontent.com/useraddmario/portfolio/main/Portfolio_Site.jpg)
 
 
+
+[![<useraddmario>](https://circleci.com/gh/useraddmario/portfolio.svg?style=shield)](https://github.com/useraddmario)
 # Simple Hugo Site
 
 Just a simple website project with links to my professional social media.  The site is created from source markdown files using Hugo, a static site generator.  I built this as part of a plan to use this workflow to run some kind of automated documentation of projects in the future.  I should be able to just generate markdown in each CI step and spit out a documentation wiki at the end.
